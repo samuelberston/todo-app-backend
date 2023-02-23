@@ -36,7 +36,7 @@ TodosRouterPsql.post('/todos', (req, res) => {
   console.log("todo query: ", `INSERT INTO todo.todos (task, description, date_created, date_due, priority)
   VALUES ('${taskName}', "${description}", "${date_created}", "${due}", "${priority}") RETURNING todo_id`)
 
-  // refactor SQL query out of the route and use %1, %2 to pass the values instead....
+  // use the express validator
   postgres.query(postTodo, [taskName, description, date_created, due, priority],
     (err, data) => {
       if (err) { throw err; }
