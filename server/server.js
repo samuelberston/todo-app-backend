@@ -1,13 +1,14 @@
 const path = require('path');
 const dotenv = require('dotenv').config()
-
 const express = require('express');
+
+console.log(process.env);
 
 const TodosRouterPsql = require('./routes/TodosRouterPsql.js');
 const TagsRouterPsql = require('./routes/TagsRouterPsql.js')
 
 const app = express();
-const port = 3000;
+const PORT = parseInt(process.env.PORT, 10);
 
 app.use(express.json());
 
@@ -23,6 +24,6 @@ app.use(function(req, res, next) {
 app.use('/', TodosRouterPsql);
 app.use('/', TagsRouterPsql);
 
-app.listen(port, () => {
-  console.log(`Listening at port ${port}`);
+app.listen(PORT, () => {
+  console.log(`Listening at port ${PORT}`);
 });
