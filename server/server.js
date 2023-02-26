@@ -3,8 +3,11 @@ const path = require('path');
 const dotenv = require('dotenv').config()
 const express = require('express');
 
+const { messagesRouter } = require("./messages/messages.router");
+
 const TodosRouterPsql = require('./routes/TodosRouterPsql.js');
-const TagsRouterPsql = require('./routes/TagsRouterPsql.js')
+const TagsRouterPsql = require('./routes/TagsRouterPsql.js');
+
 
 const PORT = parseInt(process.env.PORT, 10);
 const CLIENT_ORIGIN_URL = process.env.CLIENT_ORIGIN_URL;
@@ -26,6 +29,7 @@ app.use(
 // then, connect to that server ... and use that as middleware
 app.use('/', TodosRouterPsql);
 app.use('/', TagsRouterPsql);
+app.use('/messages', messagesRouter);
 
 app.listen(PORT, () => {
   console.log(`Listening at port ${PORT}`);
