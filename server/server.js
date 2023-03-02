@@ -7,8 +7,6 @@ const {
   validateAccessToken,
 } = require("./middleware/auth0.middleware.js");
 
-const { messagesRouter } = require("./messages/messages.router");
-
 const TodosRouterPsql = require('./routes/TodosRouterPsql.js');
 const TagsRouterPsql = require('./routes/TagsRouterPsql.js');
 
