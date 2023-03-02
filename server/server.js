@@ -22,7 +22,7 @@ app.use(
   cors({
     origin: CLIENT_ORIGIN_URL,
     methods: ["GET, PUT, POST, DELETE"],
-    allowedHeaders: ["Authorization, Origin, X-Requested-With, Content-Type, Accept"],
+    allowedHeaders: ["Authorization, Origin, X-Requested-With, Content-Type, Accept, data, body"],
     maxAge: 86400,
   })
 );
