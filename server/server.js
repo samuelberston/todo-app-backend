@@ -3,6 +3,10 @@ const path = require('path');
 const dotenv = require('dotenv').config()
 const express = require('express');
 
+const {
+  validateAccessToken,
+} = require("./middleware/auth0.middleware.js");
+
 const { messagesRouter } = require("./messages/messages.router");
 
 const TodosRouterPsql = require('./routes/TodosRouterPsql.js');
@@ -25,11 +29,8 @@ app.use(
   })
 );
 
-// refactor this to run the routes in a separate server, so I can isolate the UI
-// then, connect to that server ... and use that as middleware
-app.use('/', TodosRouterPsql);
-app.use('/', TagsRouterPsql);
-app.use('/messages', messagesRouter);
+app.use('/', validateAccessToken, TodosRouterPsql);
+app.use('/', validateAccessToken, TagsRouterPsql);
 
 app.listen(PORT, () => {
   console.log(`Listening at port ${PORT}`);
