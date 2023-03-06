@@ -40,38 +40,40 @@ TagsRouterPsql.post('/tags', (req, res) => {
         const tagId = data.rows[0].tag_id;
         console.log('Created a new tag with id: ', tagId);
         // send 201 response code
-        res.status(201).json(tagId);
+        res.status(201).json({tagId: tagId});
     });
 });
 
 // add a tag to a todo item
 TagsRouterPsql.post('/todos-tags', (req, res) => {
     console.log('post /todos-tags');
+    console.log('req.body: ', req.body);
     const { todoId, tagId } = req.body;
     console.log(`Adding tag with id: ${tagId} to todo with id: ${todoId}`);
     // add it to the todos_tags table
     postgres.query(postTodosTags, [Number(todoId), Number(tagId)], (err, data) => {
         if (err) {throw err;}
-        res.status(201).send(`Added tag ${tagId} to todo ${todoId}`)
+        res.status(201).send({tagId, todoId});
     });
 });
 
 TagsRouterPsql.delete('/todos-tags', (req, res) => {
     res.status(200);
     console.log('deleting /todos-tags');
+    console.log('req.body: ', req.body);
     const { todoId, tagId } = req.body;
-    if(tagId==undefined) {
-        const {todoId} = req.query
-        console.log(`Deleting tags for todo with id: ${todoId}`);
+    if (tagId == undefined) {
+        const { todoId } = req.body
+        console.log('Deleting tags for todo with id: ', todoId);
         postgres.query(deleteAllTodosTags, [Number(todoId)], (err, data) => {
             if (err) {res.status(500); throw err;}
             res.status(200).send(`Deleted tags for todo with id: ${todoId}`)
         });
     } else {
-       console.log(`Deleting tag with id: ${tagId} from todo with id: ${todoId}`);
+       console.log('Deleting tag with id: ', tagId, ' from todo with id: ', todoId);
        postgres.query(deleteTodosTags, [Number(todoId), Number(tagId)], (err, data) => {
           if (err) {res.status(500); throw err;}
-          res.status(200).send(`Deleted tag with id: ${tagId} from todo with id: ${todoId}`)
+          res.status(200).json({todoId, tagId});
        });
     }
 });
