@@ -2,16 +2,24 @@ const express = require('express');
 const postgres = require('../psql.js');
 const { body, validationResult } = require('express-validator');
 
-const { getTodos, postTodo, putTodo, deleteTodo } = require('../queries/todosQueries.js');
+const { getTodos, getUserTodos, postTodo, putTodo, deleteTodo } = require('../queries/todosQueries.js');
 
 const TodosRouterPsql = express.Router();
 
 // receive all todos from the db
 TodosRouterPsql.get('/todos', (req, res) => {
-  postgres.query(getTodos, (err, data) => {
-    if (err) { throw err; }
-    res.status(200).send(data.rows);
-  });
+  console.log('user_id', req.auth.payload.sub);
+  if (req.auth.payload.sub !== undefined) {
+    postgres.query(getUserTodos, [req.auth.payload.sub], (err, data) => {
+        if (err) { throw err; }
+        res.status(200).send(data.rows);
+    });
+  } else {
+    postgres.query(getTodos, (err, data) => {
+      if (err) { throw err; }
+      res.status(200).send(data.rows);
+    });
+  }
 });
 
 // create a new todo item
