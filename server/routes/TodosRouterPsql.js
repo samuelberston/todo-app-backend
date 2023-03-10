@@ -78,9 +78,9 @@ TodosRouterPsql.put('/todos', (req, res) => {
 
 // delete a todo item
 TodosRouterPsql.delete('/todos', (req, res) => {
-  const todoId = req.query.todoId;
+  const { todoId, user_id } = req.query;
   // remove from db
-  postgres.query(deleteTodo, [todoId], (err, data) => {
+  postgres.query(deleteTodo, [todoId, user_id], (err, data) => {
     if (err) { throw err; }
     res.status(200).send(data);
   });

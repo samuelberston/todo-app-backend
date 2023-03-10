@@ -13,7 +13,7 @@ const putTodo = `UPDATE todo.todos
                     WHERE todo_id = $6 AND user_id = $7`
 
 // delete todo
-const deleteTodo = `DELETE FROM todo.todos WHERE todo_id = $1;`
+const deleteTodo = `DELETE FROM todo.todos WHERE todo_id = $1 AND user_id = $2;`
 
 module.exports = {
     getTodos,
