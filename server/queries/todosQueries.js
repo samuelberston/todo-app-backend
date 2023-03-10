@@ -4,8 +4,8 @@ const getTodos = 'SELECT * FROM todo.todos ORDER BY todo_id;';
 const getUserTodos = `SELECT * FROM todo.todos WHERE user_id = $1 ORDER BY todo_id;`
 
 // post todo
-const postTodo = `INSERT INTO todo.todos (task, description, date_created, date_due, priority)
-                  VALUES ($1, $2, $3, $4, $5) RETURNING todo_id;`
+const postTodo = `INSERT INTO todo.todos (task, description, date_created, date_due, priority, user_id)
+                  VALUES ($1, $2, $3, $4, $5, $6) RETURNING todo_id;`
 
 // put todo
 const putTodo = `UPDATE todo.todos
