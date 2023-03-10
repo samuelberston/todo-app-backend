@@ -10,7 +10,7 @@ const postTodo = `INSERT INTO todo.todos (task, description, date_created, date_
 // put todo
 const putTodo = `UPDATE todo.todos
                  SET task = $1, description = $2, date_created = $3, date_due= $4, priority = $5
-                    WHERE todo_id = $6`
+                    WHERE todo_id = $6 AND user_id = $7`
 
 // delete todo
 const deleteTodo = `DELETE FROM todo.todos WHERE todo_id = $1;`

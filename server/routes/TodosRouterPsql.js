@@ -58,7 +58,7 @@ TodosRouterPsql.post('/todos', (req, res) => {
 TodosRouterPsql.put('/todos', (req, res) => {
   console.log('put todo');
   console.log("req.body: ", req.body);
-  let { todo_id, taskName, description, date_created, due, priority } = req.body;
+  let { todo_id, taskName, description, date_created, due, priority, user_id } = req.body;
 
   if (description == undefined) { description = ""}
   if (date_created == undefined) { date_created = ""}
@@ -67,12 +67,12 @@ TodosRouterPsql.put('/todos', (req, res) => {
   
   console.log('update todo query: ', `UPDATE todo.todos
   SET task = '${taskName}', description = '${description}', date_created = '${date_created}', date_due= '${due}', priority = '${priority}'
-  WHERE todo_id = ${todo_id}`);
+  WHERE todo_id = ${todo_id} AND user_id = ${user_id}`);
 
-  postgres.query(putTodo, [taskName, description, date_created, due, priority, todo_id],
+  postgres.query(putTodo, [taskName, description, date_created, due, priority, todo_id, user_id],
     (err, data) => {
       if (err) { throw err; }
-      res.status(204).json(todo_id);
+      res.status(204).json({todo_id, user_id});
     });
 });
 
