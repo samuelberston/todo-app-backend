@@ -10,6 +10,7 @@ const TodosRouterPsql = express.Router();
 TodosRouterPsql.get('/todos', (req, res) => {
   console.log('user_id', req.auth.payload.sub);
   if (req.auth.payload.sub !== undefined) {
+    console.log('todo query: ', `SELECT * FROM todo.todos WHERE user_id = ${req.auth.payload.sub} ORDER BY todo_id;`)
     postgres.query(getUserTodos, [req.auth.payload.sub], (err, data) => {
         if (err) { throw err; }
         res.status(200).send(data.rows);
