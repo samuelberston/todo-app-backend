@@ -1,4 +1,6 @@
 const express = require('express');
+const { v4: uuidv4 } = require('uuid');
+
 const postgres = require('../psql.js');
 const { body, validationResult } = require('express-validator');
 
@@ -21,7 +23,7 @@ UsersRouterPsql.post('/users', (req, res) => {
   const user_id = req.auth.payload.sub;
   console.log('user_id', user_id);
 
-  postgres.query(postUser, [user_id], (err, data) => {
+  postgres.query(postUser, [uuidv4(), user_id], (err, data) => {
     if (err) { throw err; }
     res.status(201).send([user_id]);
   });
