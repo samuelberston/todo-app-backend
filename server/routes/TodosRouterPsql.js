@@ -28,7 +28,7 @@ TodosRouterPsql.get('/todos', (req, res) => {
 TodosRouterPsql.post('/todos', (req, res) => {
   console.log('post todo');
   // insert new todo into db
-  let { taskName, description, date_created, due, priority, user_id } = req.body;
+  let { taskName, description, date_created, due, priority, user_uuid } = req.body;
 
   console.log("todo data: ", req.body);
 
@@ -43,11 +43,11 @@ TodosRouterPsql.post('/todos', (req, res) => {
   }
   if (priority == undefined) { priority = "" }
 
-  console.log("todo query: ", `INSERT INTO todo.todos (task, description, date_created, date_due, priority, user_id)
-  VALUES ('${taskName}', "${description}", "${date_created}", "${due}", "${priority}", "${user_id}") RETURNING todo_id`)
+  console.log("todo query: ", `INSERT INTO todo.todos (task, description, date_created, date_due, priority, user_uuid)
+  VALUES ('${taskName}', "${description}", "${date_created}", "${due}", "${priority}", "${user_uuid}") RETURNING todo_id`)
 
   // use the express validator
-  postgres.query(postTodo, [taskName, description, date_created, due, priority, user_id],
+  postgres.query(postTodo, [taskName, description, date_created, due, priority, user_uuid],
     (err, data) => {
       if (err) { throw err; }
       const todoId = data.rows[0].todo_id;
@@ -60,7 +60,7 @@ TodosRouterPsql.post('/todos', (req, res) => {
 TodosRouterPsql.put('/todos', (req, res) => {
   console.log('put todo');
   console.log("req.body: ", req.body);
-  let { todo_id, taskName, description, date_created, due, priority, user_id } = req.body;
+  let { todo_id, taskName, description, date_created, due, priority, user_uuid } = req.body;
 
   if (description == undefined) { description = ""}
   if (date_created == undefined) { date_created = ""}
@@ -69,9 +69,9 @@ TodosRouterPsql.put('/todos', (req, res) => {
   
   console.log('update todo query: ', `UPDATE todo.todos
   SET task = '${taskName}', description = '${description}', date_created = '${date_created}', date_due= '${due}', priority = '${priority}'
-  WHERE todo_id = ${todo_id} AND user_id = ${user_id}`);
+  WHERE todo_id = ${todo_id} AND user_id = ${user_uuid}`);
 
-  postgres.query(putTodo, [taskName, description, date_created, due, priority, todo_id, user_id],
+  postgres.query(putTodo, [taskName, description, date_created, due, priority, todo_id, user_uuid],
     (err, data) => {
       if (err) { throw err; }
       res.status(204).json({todo_id, user_id});
@@ -80,9 +80,9 @@ TodosRouterPsql.put('/todos', (req, res) => {
 
 // delete a todo item
 TodosRouterPsql.delete('/todos', (req, res) => {
-  const { todoId, user_id } = req.query;
+  const { todoId, user_uuid } = req.query;
   // remove from db
-  postgres.query(deleteTodo, [todoId, user_id], (err, data) => {
+  postgres.query(deleteTodo, [todoId, user_uuid], (err, data) => {
     if (err) { throw err; }
     res.status(200).send(data);
   });
