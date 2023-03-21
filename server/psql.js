@@ -12,8 +12,8 @@ const port = 5432;
 // for connection to docker postgresql (todo-db)
 const user = 'postgres';
 const password = 'docker';
-const host = 'host.docker.internal'; // for running todo-app with containerized db
-// const host = 'localhost'; // for running todo-app locally
+//const host = 'host.docker.internal'; // for running todo-app with containerized db
+ const host = 'localhost'; // for running todo-app locally
 const database = 'todo';
 
 const postgres = new Client({

@@ -18,10 +18,13 @@
   },
   "homepage": "https://github.com/samuelberston/todo-app-backend#readme",
   "dependencies": {
+    "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
+    "express-oauth2-jwt-bearer": "^1.3.0",
     "express-validator": "^6.14.2",
     "nodemon": "^2.0.20",
-    "pg": "^8.8.0"
+    "pg": "^8.8.0",
+    "uuid": "^9.0.0"
   }
 }
