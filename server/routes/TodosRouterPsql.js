@@ -8,10 +8,11 @@ const TodosRouterPsql = express.Router();
 
 // receive all todos from the db
 TodosRouterPsql.get('/todos', (req, res) => {
+  console.log('req params: ', req.query.user_uuid);
   console.log('user_id', req.auth.payload.sub);
   if (req.auth.payload.sub !== undefined) {
-    console.log('todo query: ', `SELECT * FROM todo.todos WHERE user_id = ${req.auth.payload.sub} ORDER BY todo_id;`)
-    postgres.query(getUserTodos, [req.auth.payload.sub], (err, data) => {
+    console.log('todo query: ', `SELECT * FROM todo.todos WHERE user_uuid = ${req.query.user_uuid} ORDER BY todo_id;`)
+    postgres.query(getUserTodos, [req.query.user_uuid], (err, data) => {
         if (err) { throw err; }
         res.status(200).send(data.rows);
     });
