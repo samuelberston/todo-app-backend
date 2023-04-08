@@ -18,10 +18,10 @@ UsersRouterPsql.get('/users', (req, res) => {
 });
 
 UsersRouterPsql.post('/users', (req, res) => {
-  const user_id = req.auth.payload.sub;
   const user_uuid = uuidv4()
-
-  postgres.query(postUser, [user_uuid, user_id], (err, data) => {
+  const user_id = req.auth.payload.sub;
+  const user_email = req.body.email;
+  postgres.query(postUser, [user_uuid, user_id, user_email], (err, data) => {
     if (err) { throw err; }
     res.status(201).send([user_id]);
   });
