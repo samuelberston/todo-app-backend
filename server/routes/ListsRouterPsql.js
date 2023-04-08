@@ -1,17 +1,23 @@
 const ListsRouterPsql = require('express').Router();
 const { v4: uuidv4 } = require('uuid');
 
-
 const postgres = require('../psql.js');
 
-const { getUserLists, postUserLists } = require('../queries/listsQueries.js');
+const { getUserLists, getTodoList, postUserLists } = require('../queries/listsQueries.js');
 
 ListsRouterPsql.get('/lists', (req, res) => {
-  const user_uuid = req.query.user_uuid;
-  postgres.query(getUserLists, [user_uuid], (err, data) => {
-    if (err) { throw err; }
-    res.status(200).send(data.rows);
-  });
+  const { user_uuid, list_uuid } = req.query;
+  if (list_uuid) {
+    postgres.query(getTodoList, [todo_uuid], (err, data) => {
+      if (err) { throw err; }
+      res.status(200).send(data);
+    });
+  } else if (user_uuid) {
+    postgres.query(getUserLists, [user_uuid], (err, data) => {
+      if (err) { throw err; }
+      res.status(200).send(data.rows);
+    });
+  }
 });
 
 ListsRouterPsql.post('/lists', (req, res) => {
