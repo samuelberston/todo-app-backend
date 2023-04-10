@@ -6,6 +6,7 @@ const postgres = require('../psql.js');
 const { getUserLists, getTodoList, postUserLists } = require('../queries/listsQueries.js');
 
 ListsRouterPsql.get('/lists', (req, res) => {
+  console.log('get /lists', req.query);
   const { user_uuid, list_uuid } = req.query;
   if (list_uuid) {
     postgres.query(getTodoList, [todo_uuid], (err, data) => {
