@@ -1,6 +1,7 @@
 const express = require('express');
 const postgres = require('../psql.js');
 const { body, validationResult } = require('express-validator');
+const uuid = require('uuid');
 
 const { getUserTodos, getUserTodosAndLists, postTodo, putTodo, deleteTodo } = require('../queries/todosQueries.js');
 
@@ -53,18 +54,21 @@ TodosRouterPsql.post('/todos', (req, res) => {
 TodosRouterPsql.put('/todos', (req, res) => {
   console.log('put todo');
   console.log("req.body: ", req.body);
-  let { todo_id, taskName, description, date_created, due, priority, user_uuid } = req.body;
+  let { todo_id, taskName, description, date_created, due, priority, user_uuid, list } = req.body;
 
-  if (description == undefined) { description = ""}
-  if (date_created == undefined) { date_created = ""}
-  if (due == undefined) { due = ""}
-  if (priority == undefined) { priority = ""}
+  if (description == undefined) { description = ""; }
+  if (date_created == undefined) { date_created = ""; }
+  if (due == undefined) { due = "; "}
+  if (priority == undefined) { priority = ""; }
   
   console.log('update todo query: ', `UPDATE todo.todos
-  SET task = '${taskName}', description = '${description}', date_created = '${date_created}', date_due= '${due}', priority = '${priority}'
+  SET task = '${taskName}', description = '${description}', date_created = '${date_created}', date_due= '${due}', priority = '${priority}', list_uuid = '${list.list_uuid}'
   WHERE todo_id = ${todo_id} AND user_id = ${user_uuid}`);
 
-  postgres.query(putTodo, [taskName, description, date_created, due, priority, todo_id, user_uuid],
+  console.log(uuid.stringify(uuid.parse(list.list_uuid)));
+  console.log(list.list_uuid);
+
+  postgres.query(putTodo, [taskName, description, date_created, due, priority, uuid.stringify(uuid.parse(list.list_uuid)), todo_id, user_uuid],
     (err, data) => {
       if (err) { throw err; }
       res.status(204).json({todo_id, user_uuid});
