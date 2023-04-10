@@ -3,19 +3,27 @@ const postgres = require('../psql.js');
 const { body, validationResult } = require('express-validator');
 const uuid = require('uuid');
 
-const { getUserTodos, getUserTodosAndLists, postTodo, putTodo, deleteTodo } = require('../queries/todosQueries.js');
+const { getUserTodos, getUserTodosAndLists, getUserTodosAndListsByList, postTodo, putTodo, deleteTodo } = require('../queries/todosQueries.js');
 
 const TodosRouterPsql = express.Router();
 
 // receive all todos from the db
 TodosRouterPsql.get('/todos', (req, res) => {
-  console.log('req params: ', req.query.user_uuid);
-  if (!req.auth.payload.sub) { res.status(401); }
-  console.log('todo query: ', `SELECT * FROM todo.todos WHERE user_uuid = ${req.query.user_uuid} ORDER BY todo_id;`)
-  postgres.query(getUserTodosAndLists, [req.query.user_uuid], (err, data) => {
+  const { user_uuid, list_uuid } = req.query;
+  console.log('req params: ', req.query);
+  if (!req.auth.payload.sub || !user_uuid) {
+    res.status(401);
+  } else if (list_uuid) {
+    postgres.query(getUserTodosAndListsByList, [user_uuid, list_uuid], (err, data) => {
       if (err) { throw err; }
       res.status(200).send(data.rows);
-  });
+    });
+  } else {
+    postgres.query(getUserTodosAndLists, [req.query.user_uuid], (err, data) => {
+        if (err) { throw err; }
+        res.status(200).send(data.rows);
+    });
+  }
 });
 
 // create a new todo item

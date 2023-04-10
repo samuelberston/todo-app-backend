@@ -10,6 +10,14 @@ const getUserTodosAndLists = `SELECT *
                               WHERE todo.todos.user_uuid = $1
                               ORDER BY todo_id;`
 
+const getUserTodosAndListsByList = `SELECT *
+                                    FROM todo.todos
+                                    INNER JOIN todo.lists
+                                    ON todo.todos.list_uuid = todo.lists.list_uuid
+                                    WHERE todo.todos.user_uuid = $1
+                                    AND todo.todos.list_uuid = $2
+                                    ORDER BY todo_id;`
+
 // post todo
 const postTodo = `INSERT INTO todo.todos (task, description, date_created, date_due, priority, user_uuid)
                   VALUES ($1, $2, $3, $4, $5, $6) RETURNING todo_id;`
@@ -26,6 +34,7 @@ module.exports = {
 //    getTodos,
     getUserTodos,
     getUserTodosAndLists,
+    getUserTodosAndListsByList,
     postTodo,
     putTodo,
     deleteTodo
