@@ -27,7 +27,8 @@ ListsRouterPsql.post('/lists', (req, res) => {
   const list_uuid = uuidv4();
   postgres.query(postUserLists, [list_uuid, list_name, user_uuid], (err, data) => {
     if (err) { throw err; }
-    res.status(204).send([list_uuid]);
+    res.json({'list_uuid': list_uuid});
+    res.status(204);
   });
 });
 
