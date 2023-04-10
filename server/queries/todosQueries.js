@@ -6,7 +6,7 @@ const getUserTodos = `SELECT * FROM todo.todos WHERE user_uuid = $1 ORDER BY tod
 const getUserTodosAndLists = `SELECT *
                               FROM todo.todos
                               INNER JOIN todo.lists
-                              ON todo.todos.user_uuid = todo.lists.user_uuid
+                              ON todo.todos.list_uuid = todo.lists.list_uuid
                               WHERE todo.todos.user_uuid = $1
                               ORDER BY todo_id;`
 
