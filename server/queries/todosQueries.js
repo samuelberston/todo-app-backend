@@ -19,8 +19,8 @@ const getUserTodosAndListsByList = `SELECT *
                                     ORDER BY todo_id;`
 
 // post todo
-const postTodo = `INSERT INTO todo.todos (task, description, date_created, date_due, priority, user_uuid, list_uuid)
-                  VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING todo_id;`
+const postTodo = `INSERT INTO todo.todos (todo_uuid, task, description, date_created, date_due, priority, user_uuid, list_uuid)
+                  VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING todo_uuid;`
 
 // put todo
 const putTodo = `UPDATE todo.todos
@@ -38,4 +38,4 @@ module.exports = {
     postTodo,
     putTodo,
     deleteTodo
-}
+};

@@ -45,16 +45,16 @@ TodosRouterPsql.post('/todos', (req, res) => {
   }
   if (priority == undefined) { priority = "" }
 
-  console.log("todo query: ", `INSERT INTO todo.todos (task, description, date_created, date_due, priority, user_uuid, list_uuid)
-  VALUES ('${taskName}', "${description}", "${date_created}", "${due}", "${priority}", "${user_uuid}", ${list.list_uuid}) RETURNING todo_id`)
+  console.log("todo query: ", `INSERT INTO todo.todos (todo_uuid, task, description, date_created, date_due, priority, user_uuid, list_uuid)
+  VALUES ('todo_uuid', '${taskName}', "${description}", "${date_created}", "${due}", "${priority}", "${user_uuid}", ${list.list_uuid}) RETURNING todo_id`)
 
   // use the express validator
-  postgres.query(postTodo, [taskName, description, date_created, due, priority, user_uuid, list.list_uuid],
+  postgres.query(postTodo, [uuid.v4(), taskName, description, date_created, due, priority, user_uuid, list.list_uuid],
     (err, data) => {
       if (err) { throw err; }
-      const todoId = data.rows[0].todo_id;
-      console.log('created new todo with id: ', todoId);
-      res.status(201).send([todoId]);
+      const todoUUID = data.rows[0].todo_uuid;
+      console.log('created new todo with uuid: ', todoUUID);
+      res.status(201).send([todoUUID]);
     });
 });
 
