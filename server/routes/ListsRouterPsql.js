@@ -3,13 +3,17 @@ const { v4: uuidv4 } = require('uuid');
 
 const postgres = require('../psql.js');
 
-const { getUserLists, getTodoList, postUserLists, putListsName, putListsTodoCount, decListsTodoCount, deleteLists } = require('../queries/listsQueries.js');
+const {
+        getUserLists, getTodoList, postUserLists,
+        putListsName, putListsTodoCount, decListsTodoCount,
+        deleteLists, getListTodoCount
+      } = require('../queries/listsQueries.js');
 
 ListsRouterPsql.get('/lists', (req, res) => {
   console.log('get /lists', req.query);
   const { user_uuid, list_uuid } = req.query;
   if (list_uuid) {
-    postgres.query(getTodoList, [todo_uuid], (err, data) => {
+    postgres.query(getTodoList, [list_uuid], (err, data) => {
       if (err) { throw err; }
       res.status(200).send(data);
     });
@@ -63,11 +67,25 @@ ListsRouterPsql.put('/lists', (req, res) => {
 * @param list_uuid
 */
 ListsRouterPsql.delete('/lists', (req, res) => {
-  const { list_uuid } = req.query
+  const { list_uuid } = req.query;
   postgres.query(deleteLists, [list_uuid], (err, data) => {
     if (err) { throw err; }
     res.status(200);
     res.json('Deleted list with uuid ', list_uuid);
+  });
+});
+
+/*
+* get /lists-count - return # todos for list
+* @param list_uuid
+*/
+
+ListsRouterPsql.get('/lists-count', (req, res) => {
+  const { list_uuid } = req.query;
+  postgres.query(getListTodoCount, [list_uuid], (err, data) => {
+    if (err) { throw err; }
+    res.status(200)
+    res.json(data.rows[0]);
   });
 });
 

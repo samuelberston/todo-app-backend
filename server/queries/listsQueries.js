@@ -2,8 +2,8 @@ const getUserLists = `SELECT * FROM todo.lists WHERE user_uuid = $1;`;
 
 const getTodoList = `SELECT * from todo.lists WHERE list_uuid = $1`;
 
-const postUserLists = `INSERT INTO todo.lists (list_uuid, list_name, user_uuid, todo_count)
-                       VALUES ($1, $2, $3, 0);`
+const postUserLists = `INSERT INTO todo.lists (list_uuid, list_name, user_uuid)
+                       VALUES ($1, $2, $3);`
 
 const putListsName = `UPDATE todo.lists SET todo.lists.list_name = $1
                      WHERE todo.lists.list_uuid = $2;`
@@ -18,6 +18,9 @@ const decListsTodoCount = `UPDATE todo.lists
 
 const deleteLists = `DELETE FROM todo.lists WHERE todo.lists.list_uuid = $1;`
 
+const getListTodoCount = `SELECT COUNT(todo.todos.todo_id) FROM todo.todos
+                          WHERE todo.todos.list_uuid = $1;`
+
 module.exports = {
   getUserLists,
   getTodoList,
@@ -25,5 +28,6 @@ module.exports = {
   putListsName,
   putListsTodoCount,
   decListsTodoCount,
-  deleteLists
+  deleteLists,
+  getListTodoCount
 }
