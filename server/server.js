@@ -11,6 +11,7 @@ const TodosRouterPsql = require('./routes/TodosRouterPsql.js');
 const TagsRouterPsql = require('./routes/TagsRouterPsql.js');
 const UsersRouterPsql = require('./routes/UsersRouterPsql');
 const ListsRouterPsql = require('./routes/ListsRouterPsql');
+const SubtasksRouterPsql = require('./routes/SubtasksRouterPsql');
 
 const PORT = parseInt(process.env.PORT, 10);
 const CLIENT_ORIGIN_URL = process.env.CLIENT_ORIGIN_URL;
@@ -32,6 +33,7 @@ app.use('/', validateAccessToken, TodosRouterPsql);
 app.use('/', validateAccessToken, TagsRouterPsql);
 app.use('/', validateAccessToken, UsersRouterPsql);
 app.use('/', validateAccessToken, ListsRouterPsql);
+app.use('/', validateAccessToken, SubtasksRouterPsql);
 
 app.listen(PORT, () => {
   console.log(`Listening at port ${PORT}`);

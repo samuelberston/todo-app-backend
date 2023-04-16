@@ -1,7 +1,7 @@
-const getSubtasks = `SELECT * FROM todo.subtasks WHERE todo_uuid = $1;`;
+const getSubtasks = `SELECT * FROM todo.subtasks WHERE todo_uuid = $1 AND user_uuid = $2;`
 
 const postSubtask = `INSERT INTO todo.subtasks (subtask_uuid, task, description, date_created, date_due, priority, user_uuid, todo_uuid)
-                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8);`;
+                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8);`
 
 const putSubtask = `UPDATE todo.subtasks
                     SET task = $1, description = $2, date_due = $3, priority = $4
@@ -14,4 +14,4 @@ module.exports = {
     postSubtask,
     putSubtask,
     deleteSubtask
-};
+}

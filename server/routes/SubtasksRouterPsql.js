@@ -1,16 +1,22 @@
 const express = require('express');
 const uuid = require('uuid');
 const postgres = require('../psql.js');
-const { getSubtasks, postSubtasks, putSubtasks, deleteSubtasks } = '../queries/subtasks.queries.js';
+
+const { postSubtasks, putSubtasks, deleteSubtasks } = require('../queries/subtasksQueries.js');
 
 const SubtasksRouterPsql = express.Router();
+
+// why can't i get this from the file????
+const getSubtasks = `SELECT * FROM todo.subtasks WHERE todo_uuid = $1 AND user_uuid = $2;`;
 
 /* get /subtasks
 *  @param todo_uuid
 */
 SubtasksRouterPsql.get('/subtasks', (req, res) => {
-  const { todo_uuid } req.query;
-  postgres.query(getSubtasks, [todo_uuid], (err, data) => {
+  console.log('get /subtasks', req.query);
+  const { todo_uuid, user_uuid } = req.query;
+  console.log('getSubtasks: ', postSubtasks, putSubtasks, deleteSubtasks);
+  postgres.query(getSubtasks, [todo_uuid, user_uuid], (err, data) => {
     if (err) { throw err; }
     if (data) {
       res.send(data.rows);
@@ -33,4 +39,4 @@ SubtasksRouterPsql.post('/subtasks', (req, res) => {
   });
 });
 
-export default SubtasksRouterPsql;
+module.exports = SubtasksRouterPsql;
