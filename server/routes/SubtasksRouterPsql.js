@@ -2,7 +2,7 @@ const express = require('express');
 const uuid = require('uuid');
 const postgres = require('../psql.js');
 
-const { postSubtasks, putSubtasks, deleteSubtasks } = require('../queries/subtasksQueries.js');
+const { postSubtasks, putSubtasks, deleteSubtask } = require('../queries/subtasksQueries.js');
 
 const SubtasksRouterPsql = express.Router();
 
@@ -37,6 +37,21 @@ SubtasksRouterPsql.post('/subtasks', (req, res) => {
         res.status(204);
       }
   });
+});
+
+SubtasksRouterPsql.delete('/subtasks', (req, res) => {
+  console.log('delete subtask');
+  console.log(req.query);
+  console.log(deleteSubtask);
+  const { subtask_uuid, user_uuid } = req.query;
+  postgres.query(deleteSubtask, [subtask_uuid],
+    (err, data) => {
+      if (err) { throw err; }
+      if (data) {
+        res.send('deleted ' + subtask_uuid);
+        res.sendStatus(204);
+      }
+    });
 });
 
 module.exports = SubtasksRouterPsql;
