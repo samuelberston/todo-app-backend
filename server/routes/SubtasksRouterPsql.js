@@ -15,7 +15,6 @@ const getSubtasks = `SELECT * FROM todo.subtasks WHERE todo_uuid = $1 AND user_u
 SubtasksRouterPsql.get('/subtasks', (req, res) => {
   console.log('get /subtasks', req.query);
   const { todo_uuid, user_uuid } = req.query;
-  console.log('getSubtasks: ', postSubtasks, putSubtasks, deleteSubtasks);
   postgres.query(getSubtasks, [todo_uuid, user_uuid], (err, data) => {
     if (err) { throw err; }
     if (data) {
