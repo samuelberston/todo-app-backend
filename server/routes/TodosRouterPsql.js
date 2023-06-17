@@ -68,13 +68,6 @@ TodosRouterPsql.put('/todos', (req, res) => {
   if (date_created == undefined) { date_created = ""; }
   if (due == undefined) { due = "; "}
   if (priority == undefined) { priority = ""; }
-  
-  console.log('update todo query: ', `UPDATE todo.todos
-  SET task = '${taskName}', description = '${description}', date_created = '${date_created}', date_due= '${due}', priority = '${priority}', list_uuid = '${list.list_uuid}'
-  WHERE todo_id = ${todo_id} AND user_id = ${user_uuid}`);
-
-  console.log(uuid.stringify(uuid.parse(list.list_uuid)));
-  console.log(list.list_uuid);
 
   postgres.query(putTodo, [taskName, description, date_created, due, priority, uuid.stringify(uuid.parse(list.list_uuid)), todo_id, user_uuid],
     (err, data) => {
