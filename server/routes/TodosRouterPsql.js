@@ -3,6 +3,7 @@ const postgres = require('../psql.js');
 const { body, validationResult } = require('express-validator');
 const uuid = require('uuid');
 
+// SQL queries
 const { getUserTodos, getUserTodosAndLists, getUserTodosAndListsByList, postTodo, putTodo, deleteTodo } = require('../queries/todosQueries.js');
 
 const TodosRouterPsql = express.Router();
