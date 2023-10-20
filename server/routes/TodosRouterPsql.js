@@ -1,10 +1,12 @@
 const express = require('express');
 const postgres = require('../psql.js');
-const { body, validationResult } = require('express-validator');
 const uuid = require('uuid');
 
 // SQL queries
 const { getUserTodos, getUserTodosAndLists, getUserTodosAndListsByList, postTodo, putTodo, deleteTodo } = require('../queries/todosQueries.js');
+
+// vault services
+const { vault_encrypt_all, vault_decrypt_all } = require('../../vault/services.js') ;
 
 const TodosRouterPsql = express.Router();
 
@@ -22,6 +24,9 @@ TodosRouterPsql.get('/todos', (req, res) => {
   } else {
     postgres.query(getUserTodosAndLists, [req.query.user_uuid], (err, data) => {
         if (err) { throw err; }
+        console.log(data.rows);
+        vault_decrypt_all(data.rows)
+          .then(res => console.log(res))
         res.status(200).send(data.rows);
     });
   }
@@ -29,34 +34,41 @@ TodosRouterPsql.get('/todos', (req, res) => {
 
 // create a new todo item
 TodosRouterPsql.post('/todos', (req, res) => {
-  console.log('post todo');
-  // insert new todo into db
   let { taskName, description, date_created, due, priority, user_uuid, list } = req.body;
-
-  console.log("todo data: ", req.body);
 
   // update the validation section to run synchronously -- create another validation function
   if (description == undefined) { description = "" }
   if (date_created == undefined) { date_created = "" }
   if (due == undefined) {
     date_due = ""
-  } else {
-    console.log('validating due date');
-    body(due).isDate()
   }
+//  else {
+//     use express-validator library
+//    body(due).isDate()
+//  }
   if (priority == undefined) { priority = "" }
+  if (list == undefined) { list = "" }
 
-  console.log("todo query: ", `INSERT INTO todo.todos (todo_uuid, task, description, date_created, date_due, priority, user_uuid, list_uuid)
-  VALUES ('todo_uuid', '${taskName}', "${description}", "${date_created}", "${due}", "${priority}", "${user_uuid}", ${list.list_uuid}) RETURNING todo_id`)
+  const arguments = [uuid.v4(), taskName, description, date_created, due, priority, user_uuid, list.list_uuid];
+  vault_encrypt_all(arguments)
+    .then((encryptedValues) =>
+      postgres.query(postTodo, ...encryptedValues,
+        (err, data) => {
+          if (err) { throw err; }
+          const todoUUID = data.rows[0].todo_uuid;
+          console.log('created new todo with uuid: ', todoUUID);
+          res.status(201).send([todoUUID]);
+        })
+    )
 
   // use the express validator
-  postgres.query(postTodo, [uuid.v4(), taskName, description, date_created, due, priority, user_uuid, list.list_uuid],
-    (err, data) => {
-      if (err) { throw err; }
-      const todoUUID = data.rows[0].todo_uuid;
-      console.log('created new todo with uuid: ', todoUUID);
-      res.status(201).send([todoUUID]);
-    });
+//  postgres.query(postTodo, [encryptedValues],
+//    (err, data) => {
+//      if (err) { throw err; }
+//      const todoUUID = data.rows[0].todo_uuid;
+//      console.log('created new todo with uuid: ', todoUUID);
+//      res.status(201).send([todoUUID]);
+//    });
 });
 
 // update a todo item
@@ -67,8 +79,10 @@ TodosRouterPsql.put('/todos', (req, res) => {
 
   if (description == undefined) { description = ""; }
   if (date_created == undefined) { date_created = ""; }
-  if (due == undefined) { due = "; "}
+  if (due == undefined) { due = ""; }
   if (priority == undefined) { priority = ""; }
+
+  const arguments = []
 
   postgres.query(putTodo, [taskName, description, date_created, due, priority, uuid.stringify(uuid.parse(list.list_uuid)), todo_id, user_uuid],
     (err, data) => {

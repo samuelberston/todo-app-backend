@@ -2,7 +2,6 @@ const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 
 const postgres = require('../psql.js');
-const { body, validationResult } = require('express-validator');
 
 const { getUser, postUser } = require('../queries/usersQueries.js');
 
