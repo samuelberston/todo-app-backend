@@ -1,17 +1,9 @@
-const { Client } = require('pg')
-
-const port = 5432;
-
-// for connection to docker postgresql (todo-db)
-const user = 'postgres';
-//const host = 'host.docker.internal'; // for running todo-app with containerized db
-const host = '0.0.0.0'; // for running todo-app locally
-const database = 'todo';
-
+const { Client } = require('pg');
 const AWS = require('aws-sdk');
-const secretsManager = new AWS.SecretsManager({ region: 'us-east-1' }); // Adjust the region if necessary
 
-// get DB credentials from AWS Secrests Manager
+const secretsManager = new AWS.SecretsManager({ region: 'us-east-1' });
+
+// get DB credentials from AWS Secrets Manager
 async function getDatabaseCredentials() {
   try {
     const data = await secretsManager.getSecretValue({ SecretId: 'rds-database-password' }).promise();
@@ -44,19 +36,5 @@ async function connectToDatabase() {
 }
 
 connectToDatabase();
-
-
-const postgres = new Client({
-    host,
-    port,
-    password,
-    user,
-    database
-});
-
-postgres.connect((err) => {
-    if (err) { throw err; }
-    console.log(`database connected at ${port}`);
-});
 
 module.exports = postgres;
