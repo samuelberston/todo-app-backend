@@ -48,36 +48,60 @@ TodosRouterPsql.get(
 );
 
 // create a new todo item
-TodosRouterPsql.post('/todos', (req, res) => {
-  console.log('post todo');
-  // insert new todo into db
-  let { taskName, description, date_created, due, priority, user_uuid, list } = req.body;
+TodosRouterPsql.post(
+  '/todos',
+  [
+    // Validate taskName is not empty
+    body('taskName').trim().escape().notEmpty().withMessage('Task name is required'),
+    // Validate description is optional and if provided, it should be a string
+    body('description').optional().trim().escape().isString().withMessage('Description must be a string'),
+    // Validate date_created is optional but if provided should be a valid date
+    body('date_created').optional().trim().isISO8601().withMessage('Invalid creation date format'),
+    // Validate due is optional but if provided should be a valid date
+    body('due').optional().trim().isISO8601().withMessage('Invalid due date format'),
+    // Validate priority is optional but if provided should be a number or string
+    body('priority').optional().trim().escape().isString().withMessage('Priority must be a string'),
+    // Validate user_uuid as a valid UUID
+    body('user_uuid').isUUID().withMessage('Invalid user UUID'),
+    // Validate list.list_uuid as a valid UUID
+    body('list.list_uuid').isUUID().withMessage('Invalid list UUID')
+  ],
+  (req, res) => {
+    const result = validationResult(req);
+    if (!result.isEmpty()) {
+      return res.status(400).json({ errors: result.array() });
+    }
 
-  console.log("todo data: ", req.body);
+    // Destructure validated data from the request body
+    let { taskName, description, date_created, due, priority, user_uuid, list } = req.body;
 
-  // update the validation section to run synchronously -- create another validation function
-  if (description == undefined) { description = "" }
-  if (date_created == undefined) { date_created = "" }
-  if (due == undefined) {
-    date_due = ""
-  } else {
-    console.log('validating due date');
-    body(due).isDate()
+    // Fallbacks for undefined fields (if nececesary)
+    if (description == undefined) { description = "" }
+    if (date_created == undefined) { date_created = "" }
+    if (due == undefined) {
+      date_due = ""
+    } else {
+      console.log('validating due date');
+      body(due).isDate()
+    }
+    if (priority == undefined) { priority = "" }
+
+    console.log("todo query: ", `INSERT INTO todo.todos (todo_uuid, task, description, date_created, date_due, priority, user_uuid, list_uuid)
+    VALUES ('todo_uuid', '${taskName}', "${description}", "${date_created}", "${due}", "${priority}", "${user_uuid}", ${list.list_uuid}) RETURNING todo_id`)
+
+    // Insert the new todo into the database using parameterized query (prevents SQL injection)
+    postgres.query(postTodo, [uuid.v4(), taskName, description, date_created, due, priority, user_uuid, list.list_uuid],
+      (err, data) => {
+        if (err) { 
+          return res.status(500).json({ error: 'Database error' });
+        }
+        const todoUUID = data.rows[0].todo_uuid;
+        console.log('created new todo with uuid: ', todoUUID);
+        res.status(201).send([todoUUID]);
+      }
+    );
   }
-  if (priority == undefined) { priority = "" }
-
-  console.log("todo query: ", `INSERT INTO todo.todos (todo_uuid, task, description, date_created, date_due, priority, user_uuid, list_uuid)
-  VALUES ('todo_uuid', '${taskName}', "${description}", "${date_created}", "${due}", "${priority}", "${user_uuid}", ${list.list_uuid}) RETURNING todo_id`)
-
-  // use the express validator
-  postgres.query(postTodo, [uuid.v4(), taskName, description, date_created, due, priority, user_uuid, list.list_uuid],
-    (err, data) => {
-      if (err) { throw err; }
-      const todoUUID = data.rows[0].todo_uuid;
-      console.log('created new todo with uuid: ', todoUUID);
-      res.status(201).send([todoUUID]);
-    });
-});
+);
 
 // update a todo item
 TodosRouterPsql.put('/todos', (req, res) => {
