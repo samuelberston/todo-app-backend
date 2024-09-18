@@ -1,31 +1,50 @@
 const express = require('express');
+const { body, query, validationResult } = require('express-validator');
 const postgres = require('../psql.js');
 
 const { getAllTags, getTagsForTodoId, postTag, postTodosTags, deleteTodosTags, deleteAllTodosTags } = require('../queries/tagsQueries.js');
 
 const TagsRouterPsql = express.Router();
 
-// get all tags
-// optional todoId query param to get tags for a todo item
-TagsRouterPsql.get('/tags', (req, res) => {
-    const { todoId } = req.query;
-    if (typeof todoId !== "undefined" && todoId != null) {
-        // query the db for all the tags for a specific todo
-        postgres.query(getTagsForTodoId, [todoId],
-            (err, data) => {
-                if(err) {throw err;}
-                res.status(200).send(data.rows);
+// get all tags - optional todoId query param to get tags for a todo item
+TagsRouterPsql.get(
+    '/tags',
+    // validate and sanitize optional todoId
+    query('todoId').optional().trim().escape().notEmpty().withMessage('Invalid todoId'), 
+    (req, res) => {
+        // validate todoId
+        const result = validationResult(req);
+        if (!result.isEmpty()) {
+            return res.status(400).json({ error: result });
+        }
+
+        // destructure sanitized todoId
+        const { todoId } = req.query;
+        if (typeof todoId !== "undefined" && todoId != null) {
+            // query the db for all the tags for a specific todo
+            postgres.query(
+                getTagsForTodoId, 
+                [todoId],
+                (err, data) => {
+                    if (err) { 
+                        return res.status(500).send('Database error');
+                    }
+                    res.status(200).send(data.rows);
+                });
+        } else {
+            // query the db for all the tags
+            postgres.query(
+                getAllTags, 
+                (err, data) => {
+                    if (err) { 
+                        return res.status(500).send('Database error');
+                    }                    
+                    // send data to the client
+                    res.status(200).send(data.rows);
             });
-    } else {
-        // query the db for all the tags
-        postgres.query(getAllTags, (err, data) => {
-            // handle any errors
-            if (err) {throw err;}
-            // send data to the client
-            res.status(200).send(data.rows);
-        });
+        }
     }
-});
+);
 
 // create a new tag
 TagsRouterPsql.post('/tags', (req, res) => {
