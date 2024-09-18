@@ -2,6 +2,7 @@ const cors = require("cors");
 const path = require('path');
 const dotenv = require('dotenv').config()
 const express = require('express');
+const helmet = require('helmet');
 
 const {
   validateAccessToken,
@@ -17,6 +18,9 @@ const PORT = parseInt(process.env.PORT, 10);
 const CLIENT_ORIGIN_URL = process.env.CLIENT_ORIGIN_URL;
 
 const app = express();
+
+// Use Helmet to secure app by setting various HTTP headers https://www.npmjs.com/package/helmet
+app.use(helmet());
 
 app.use(express.json());
 
