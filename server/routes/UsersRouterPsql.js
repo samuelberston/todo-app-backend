@@ -12,7 +12,10 @@ UsersRouterPsql.get('/users', (req, res) => {
   const user_id = req.auth.payload.sub;
 
   postgres.query(getUser, [user_id], (err, data) => {
-    if (err) { throw err; }
+    if (err) { 
+      console.log(err);
+      return res.status(500).send('Internal Server Error');
+    }
     res.status(200).send(data.rows[0]);
   });
 });
