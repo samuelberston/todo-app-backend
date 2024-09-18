@@ -1,6 +1,6 @@
 const express = require('express');
 const postgres = require('../psql.js');
-const { body, validationResult } = require('express-validator');
+const { body, query, validationResult } = require('express-validator');
 const uuid = require('uuid');
 
 const { getUserTodos, getUserTodosAndLists, getUserTodosAndListsByList, postTodo, putTodo, deleteTodo } = require('../queries/todosQueries.js');
@@ -8,23 +8,42 @@ const { getUserTodos, getUserTodosAndLists, getUserTodosAndListsByList, postTodo
 const TodosRouterPsql = express.Router();
 
 // receive all todos from the db
-TodosRouterPsql.get('/todos', (req, res) => {
-  const { user_uuid, list_uuid } = req.query;
-  console.log('req params: ', req.query);
-  if (!req.auth.payload.sub || !user_uuid) {
-    res.status(401);
-  } else if (list_uuid) {
-    postgres.query(getUserTodosAndListsByList, [user_uuid, list_uuid], (err, data) => {
-      if (err) { throw err; }
-      res.status(200).send(data.rows);
-    });
-  } else {
-    postgres.query(getUserTodosAndLists, [req.query.user_uuid], (err, data) => {
-        if (err) { throw err; }
-        res.status(200).send(data.rows);
-    });
+TodosRouterPsql.get(
+  '/todos', 
+  query('user_uuid').isUUID().withMessage('Invalid user_uuid'),  // Validate user_uuid as UUID
+  query('list_uuid').optional().isUUID().withMessage('Invalid list_uuid'), // list_uuid is optional but must be a UUID if provided
+  (req, res) => {
+    // check for validation errors
+    const result = validationResult(req);
+    if (!result.isEmpty) {
+      return res.status(400).json({ errors: result.array() });
+    }
+
+    const { user_uuid, list_uuid } = req.query;
+
+    // check if user is authenticated
+    if (!req.auth.payload.sub || !user_uuid) {
+      res.status(401);
+    }
+    
+    // Query the database based on whether list_uuid is present
+    if (list_uuid) {
+      postgres.query(getUserTodosAndListsByList, [user_uuid, list_uuid], (err, data) => {
+        if (err) { 
+          res.status(500).json({ error: 'Database error' });
+        }
+        res.status(200).json(data.rows);
+      });
+    } else {
+      postgres.query(getUserTodosAndLists, [req.query.user_uuid], (err, data) => {
+        if (err) { 
+          res.status(500).json({ error: 'Database error' });
+        }
+        res.status(200).json(data.rows);
+      });
+    }
   }
-});
+);
 
 // create a new todo item
 TodosRouterPsql.post('/todos', (req, res) => {
