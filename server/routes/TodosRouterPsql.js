@@ -151,14 +151,38 @@ TodosRouterPsql.put(
 );
 
 // delete a todo item
-TodosRouterPsql.delete('/todos', (req, res) => {
-  const { todoId, user_uuid } = req.query;
-  console.log('deleting todo with id: ', todoId, ' and user uuid: ', user_uuid);
-  // remove from db
-  postgres.query(deleteTodo, [todoId, user_uuid], (err, data) => {
-    if (err) { throw err; }
-    res.status(200).send(data);
-  });
-});
+TodosRouterPsql.delete(
+  '/todos',
+  [
+    // validate and sanitize todoId
+    query('todoId').trim().escape().notEmpty().withMessage('Invalid todoId'),
+    // validate and sanitize user_uuid
+    query('user_uuid').isUUID().withMessage('Invalid user_uuid')
+
+  ], 
+  (req, res) => {
+    // validate query parameters
+    const result = validationResult(req);
+    if (!result.isEmpty()) {
+      return res.status(400).json({ errors: result.array() });
+    }
+
+    // destructure sanitized query parameters
+    const { todoId, user_uuid } = req.query;
+    console.log('deleting todo with id: ', todoId, ' and user uuid: ', user_uuid);
+    
+    // Delete todo from the database using pararmeterized statement (prevents SQL injection)
+    postgres.query(
+      deleteTodo, 
+      [todoId, user_uuid], 
+      (err, data) => {
+        if (err) { 
+          return res.send(500).json({ error: 'Database error' });
+        }
+        res.status(200).send(data);
+      }
+    );
+  }
+);
 
 module.exports = TodosRouterPsql;
