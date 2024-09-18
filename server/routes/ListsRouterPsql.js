@@ -1,5 +1,6 @@
 const ListsRouterPsql = require('express').Router();
 const { v4: uuidv4 } = require('uuid');
+const { query, validationResult } = require('express-validator');
 
 const postgres = require('../psql.js');
 
@@ -9,21 +10,51 @@ const {
         deleteLists, getListTodoCount
       } = require('../queries/listsQueries.js');
 
-ListsRouterPsql.get('/lists', (req, res) => {
-  console.log('get /lists', req.query);
-  const { user_uuid, list_uuid } = req.query;
-  if (list_uuid) {
-    postgres.query(getTodoList, [list_uuid], (err, data) => {
-      if (err) { throw err; }
-      res.status(200).send(data);
-    });
-  } else if (user_uuid) {
-    postgres.query(getUserLists, [user_uuid], (err, data) => {
-      if (err) { throw err; }
-      res.status(200).send(data.rows);
-    });
+// GET /lists
+ListsRouterPsql.get(
+  '/lists',
+  [
+    // validate and sanitize user_uuid
+    query('user_uuid').isUUID().withMessage('Invalid user_uuid'),
+    // validate and sanitize list_uuid
+    query('list_uuid').optional().isUUID().withMessage('Invalid list_uuid')
+  ],
+  (req, res) => {
+    // validate query parameters
+    const result = validationResult(req);
+    if (!result.isEmpty()) {
+      return res.status(400).json({ errors: result.array() });
+    }
+
+    // destructure sanitized request query parameters
+    const { user_uuid, list_uuid } = req.query;
+
+    // if no list_uuid, get all lists for the user
+    if (!list_uuid) {
+      postgres.query(
+        getUserLists, 
+        [user_uuid], 
+        (err, data) => {
+          if (err) { 
+            return res.status(500).send('Database error');
+          }
+          res.status(200).send(data.rows);
+        }
+      );
+    } else {
+      postgres.query(
+        getUserLists, 
+        [user_uuid], 
+        (err, data) => {
+          if (err) { 
+            return res.status(500).send('Database error');
+          }
+          res.status(200).send(data.rows);
+        }
+      );
+    }
   }
-});
+);
 
 ListsRouterPsql.post('/lists', (req, res) => {
   console.log('post /lists');
