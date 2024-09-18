@@ -10,8 +10,10 @@ const TodosRouterPsql = express.Router();
 // receive all todos from the db
 TodosRouterPsql.get(
   '/todos', 
-  query('user_uuid').isUUID().withMessage('Invalid user_uuid'),  // Validate user_uuid as UUID
-  query('list_uuid').optional().isUUID().withMessage('Invalid list_uuid'), // list_uuid is optional but must be a UUID if provided
+  [
+    query('user_uuid').isUUID().withMessage('Invalid user_uuid'),  // Validate user_uuid as UUID
+    query('list_uuid').optional().isUUID().withMessage('Invalid list_uuid') // list_uuid is optional but must be a UUID if provided
+  ], 
   (req, res) => {
     // check for validation errors
     const result = validationResult(req);
