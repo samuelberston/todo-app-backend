@@ -51,19 +51,19 @@ TodosRouterPsql.get(
 TodosRouterPsql.post(
   '/todos',
   [
-    // Validate taskName is not empty
+    // Validate and sanitize taskName
     body('taskName').trim().escape().notEmpty().withMessage('Task name is required'),
-    // Validate description is optional and if provided, it should be a string
+    // Sanitize and validate description (optional)
     body('description').optional().trim().escape().isString().withMessage('Description must be a string'),
-    // Validate date_created is optional but if provided should be a valid date
-    body('date_created').optional().trim().isISO8601().withMessage('Invalid creation date format'),
-    // Validate due is optional but if provided should be a valid date
-    body('due').optional().trim().isISO8601().withMessage('Invalid due date format'),
-    // Validate priority is optional but if provided should be a number or string
+    // Sanitize and validate date_created (optional)
+    body('date_created').optional().trim().isISO8601().toDate().withMessage('Invalid creation date format'),
+    // Sanitize and validate due (optional)
+    body('due').optional().trim().isISO8601().toDate().withMessage('Invalid due date format'),
+    // Sanitize and validate priority (optional)
     body('priority').optional().trim().escape().isString().withMessage('Priority must be a string'),
-    // Validate user_uuid as a valid UUID
+    // Validate and sanitize user_uuid as a valid UUID
     body('user_uuid').isUUID().withMessage('Invalid user UUID'),
-    // Validate list.list_uuid as a valid UUID
+    // Validate and sanitize list.list_uuid as a valid UUID
     body('list.list_uuid').isUUID().withMessage('Invalid list UUID')
   ],
   (req, res) => {
