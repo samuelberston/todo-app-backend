@@ -78,12 +78,7 @@ TodosRouterPsql.post(
     // Fallbacks for undefined fields (if nececesary)
     if (description == undefined) { description = "" }
     if (date_created == undefined) { date_created = "" }
-    if (due == undefined) {
-      date_due = ""
-    } else {
-      console.log('validating due date');
-      body(due).isDate()
-    }
+    if (due == undefined) { date_due = "" }
     if (priority == undefined) { priority = "" }
 
     console.log("todo query: ", `INSERT INTO todo.todos (todo_uuid, task, description, date_created, date_due, priority, user_uuid, list_uuid)
