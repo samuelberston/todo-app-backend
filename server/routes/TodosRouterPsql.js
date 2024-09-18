@@ -99,29 +99,56 @@ TodosRouterPsql.post(
 );
 
 // update a todo item
-TodosRouterPsql.put('/todos', (req, res) => {
-  console.log('put todo');
-  console.log("req.body: ", req.body);
-  let { todo_id, taskName, description, date_created, due, priority, user_uuid, list } = req.body;
+TodosRouterPsql.put(
+  '/todos', 
+  [
+    // Validate and sanitize taskName
+    body('taskName').trim().escape().notEmpty().withMessage('Task name is required'),
+    // Sanitize and validate description (optional)
+    body('description').optional().trim().escape().isString().withMessage('Description must be a string'),
+    // Sanitize and validate date_created (optional)
+    body('date_created').optional().trim().isISO8601().toDate().withMessage('Invalid creation date format'),
+    // Sanitize and validate due (optional)
+    body('due').optional().trim().isISO8601().toDate().withMessage('Invalid due date format'),
+    // Sanitize and validate priority (optional)
+    body('priority').optional().trim().escape().isString().withMessage('Priority must be a string'),
+    // Validate and sanitize user_uuid as a valid UUID
+    body('user_uuid').isUUID().withMessage('Invalid user UUID'),
+    // Validate and sanitize list.list_uuid as a valid UUID
+    body('list.list_uuid').isUUID().withMessage('Invalid list UUID')
+  ],
+  (req, res) => {
+    // validate input body
+    const result = validationResult(req);
+    if (!result.isEmpty()) {
+      return res.status(400).json({ errors: result.array() });
+    }
 
-  if (description == undefined) { description = ""; }
-  if (date_created == undefined) { date_created = ""; }
-  if (due == undefined) { due = "; "}
-  if (priority == undefined) { priority = ""; }
-  
-  console.log('update todo query: ', `UPDATE todo.todos
-  SET task = '${taskName}', description = '${description}', date_created = '${date_created}', date_due= '${due}', priority = '${priority}', list_uuid = '${list.list_uuid}'
-  WHERE todo_id = ${todo_id} AND user_id = ${user_uuid}`);
+    // destructure sanitized data from the request body
+    let { todo_id, taskName, description, date_created, due, priority, user_uuid, list } = req.body;
 
-  console.log(uuid.stringify(uuid.parse(list.list_uuid)));
-  console.log(list.list_uuid);
+    // fallbacks for undefined fields (if necessary)
+    if (description == undefined) { description = ""; }
+    if (date_created == undefined) { date_created = ""; }
+    if (due == undefined) { due = "; "}
+    if (priority == undefined) { priority = ""; }
+    
+    console.log('update todo query: ', `UPDATE todo.todos
+    SET task = '${taskName}', description = '${description}', date_created = '${date_created}', date_due= '${due}', priority = '${priority}', list_uuid = '${list.list_uuid}'
+    WHERE todo_id = ${todo_id} AND user_id = ${user_uuid}`);
 
-  postgres.query(putTodo, [taskName, description, date_created, due, priority, uuid.stringify(uuid.parse(list.list_uuid)), todo_id, user_uuid],
-    (err, data) => {
-      if (err) { throw err; }
-      res.status(204).json({todo_id, user_uuid});
-    });
-});
+    postgres.query(
+      putTodo, 
+      [taskName, description, date_created, due, priority, uuid.stringify(uuid.parse(list.list_uuid)), todo_id, user_uuid],
+      (err, data) => {
+        if (err) {
+          return res.send(500).json({ error: 'Database error' });
+        }
+        res.status(204).json({todo_id, user_uuid});
+      }
+    );
+  }
+);
 
 // delete a todo item
 TodosRouterPsql.delete('/todos', (req, res) => {
