@@ -56,16 +56,35 @@ ListsRouterPsql.get(
   }
 );
 
-ListsRouterPsql.post('/lists', (req, res) => {
-  console.log('post /lists');
-  const {list_name, user_uuid} = req.body;
-  const list_uuid = uuidv4();
-  postgres.query(postUserLists, [list_uuid, list_name, user_uuid], (err, data) => {
-    if (err) { throw err; }
-    res.json({'list_uuid': list_uuid});
-    res.status(204);
-  });
-});
+// POST /lists
+ListsRouterPsql.post(
+  '/lists',
+  [
+    // validate and sanitize user_uuid
+    query('user_uuid').isUUID().withMessage('Invalid user_uuid'),
+    // validate and sanitize list_uuid
+    query('list_uuid').isUUID().withMessage('Invalid list_uuid')
+  ],
+  (req, res) => {
+    // validate body fields
+    const result = validationResult(req);
+    if (!result.isEmpty()) {
+      return res.status(400).json({ errors: result.array() });
+    }
+    // destructure sanitized body fields
+    const { list_name, user_uuid } = req.body;
+    const list_uuid = uuidv4();
+    postgres.query(
+      postUserLists, 
+      [list_uuid, list_name, user_uuid], 
+      (err, data) => {
+        if (err) { 
+          return res.status(500).send('Database error');
+        }
+        return res.status(204).json({'list_uuid': list_uuid});
+    });
+  }
+);
 
 /*
 * put /lists
