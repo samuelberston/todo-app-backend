@@ -6,7 +6,7 @@ const { getAllTags, getTagsForTodoId, postTag, postTodosTags, deleteTodosTags, d
 
 const TagsRouterPsql = express.Router();
 
-// get all tags - optional todoId query param to get tags for a todo item
+// GET /tags - optional todoId query param to get tags for a todo item
 TagsRouterPsql.get(
     '/tags',
     // validate and sanitize optional todoId
@@ -46,22 +46,36 @@ TagsRouterPsql.get(
     }
 );
 
-// create a new tag
-TagsRouterPsql.post('/tags', (req, res) => {
-    console.log('post /tags');
-    // get the tag name from the req body
-    let { tagName } = req.body;
-    // add it to the tags table 
-    postgres.query(postTag, [tagName],
-    (err, data) => {
-        // handle any errors
-        if (err) {throw err;}
-        const tagId = data.rows[0].tag_id;
-        console.log('Created a new tag with id: ', tagId);
-        // send 201 response code
-        res.status(201).json({tagId: tagId});
-    });
-});
+// POST /tags
+TagsRouterPsql.post(
+    '/tags',
+    // validate and sanitize tagName
+    body("tagName").notEmpty().trim().escape().withMessage('Invalid tagName'), 
+    (req, res) => {
+        // validate tagName
+        const result = validationResult(req);
+        if (!result.isEmpty()) {
+            return res.status(400).json({ error: result });
+        }
+
+        // destructure sanitized tagName from the request body
+        let { tagName } = req.body;
+        // Insert tag into the database using parameterized statement (prevents SQL injection) 
+        postgres.query(
+            postTag, 
+            [tagName],
+            (err, data) => {
+                // handle any errors
+                if (err) {
+                    return res.status(500).send('Database error');
+                }
+                const tagId = data.rows[0].tag_id;
+                console.log('Created a new tag with id: ', tagId);
+                res.status(201).json({tagId: tagId});
+            }
+        );
+    }
+);
 
 // add a tag to a todo item
 TagsRouterPsql.post('/todos-tags', (req, res) => {
