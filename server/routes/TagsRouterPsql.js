@@ -98,30 +98,51 @@ TagsRouterPsql.post(
             if (err) {
                 return res.status(500).send('Database error');
             }
-            res.status(201).send({tagId, todoId});
+            return res.status(201).send({tagId, todoId});
         });
     }
 );
 
-TagsRouterPsql.delete('/todos-tags', (req, res) => {
-    res.status(200);
-    console.log('deleting /todos-tags');
-    console.log('req.body: ', req.body);
-    const { todoId, tagId } = req.body;
-    if (tagId == undefined) {
-        const { todoId } = req.body
-        console.log('Deleting tags for todo with id: ', todoId);
-        postgres.query(deleteAllTodosTags, [Number(todoId)], (err, data) => {
-            if (err) {res.status(500); throw err;}
-            res.status(200).send(`Deleted tags for todo with id: ${todoId}`)
-        });
-    } else {
-       console.log('Deleting tag with id: ', tagId, ' from todo with id: ', todoId);
-       postgres.query(deleteTodosTags, [Number(todoId), Number(tagId)], (err, data) => {
-          if (err) {res.status(500); throw err;}
-          res.status(200).json({todoId, tagId});
-       });
+// DELETE /todos-tags
+TagsRouterPsql.delete(
+    '/todos-tags', 
+    [
+        // validate and sanitize todoId
+        body('todoId').notEmpty().trim().escape().withMessage('Invalid todoId'),
+        // validate and sanitize optional tagId
+        body('tagId').optional().trim().escape().withMessage('Invalid tagId'),
+    ],
+    (req, res) => {
+        // destructure sanitized body fields
+        const { todoId, tagId } = req.body;
+        // tagId undefined means delete all tags from todo
+        if (tagId == undefined) {
+            const { todoId } = req.body
+            console.log('Deleting tags for todo with id: ', todoId);
+            postgres.query(
+                deleteAllTodosTags, 
+                [Number(todoId)], 
+                (err, data) => {
+                    if (err) {
+                        return res.status(500).send('Database error');
+                    }
+                    return res.status(200).send(`Deleted tags for todo with id: ${todoId}`)
+                }
+            );
+        } else {
+            console.log('Deleting tag with id: ', tagId, ' from todo with id: ', todoId);
+            postgres.query(
+                deleteTodosTags, 
+                [Number(todoId), Number(tagId)], 
+                (err, data) => {
+                    if (err) {
+                        return res.status(500).send('Database error');
+                    }
+                    return res.status(200).json({todoId, tagId});
+                }
+            );
+        }
     }
-});
+);
 
 module.exports = TagsRouterPsql;
