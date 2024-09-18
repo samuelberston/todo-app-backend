@@ -78,17 +78,30 @@ TagsRouterPsql.post(
 );
 
 // add a tag to a todo item
-TagsRouterPsql.post('/todos-tags', (req, res) => {
-    console.log('post /todos-tags');
-    console.log('req.body: ', req.body);
-    const { todoId, tagId } = req.body;
-    console.log(`Adding tag with id: ${tagId} to todo with id: ${todoId}`);
-    // add it to the todos_tags table
-    postgres.query(postTodosTags, [Number(todoId), Number(tagId)], (err, data) => {
-        if (err) {throw err;}
-        res.status(201).send({tagId, todoId});
-    });
-});
+TagsRouterPsql.post(
+    '/todos-tags',
+    [
+        // validate and sanitize todoId
+        body('todoId').notEmpty().trim().escape().withMessage('Invalid todoId'),
+        // validate and sanitize  tagId
+        body('tagId').notEmpty().trim().escape().withMessage('Invalid tagId'),
+    ],
+    (req, res) => {
+        // destructure the sanitized body fields
+        const { todoId, tagId } = req.body;
+        console.log(`Adding tag with id: ${tagId} to todo with id: ${todoId}`);
+        // Insert the relation into the todos_tags table
+        postgres.query(
+            postTodosTags, 
+            [Number(todoId), Number(tagId)], 
+            (err, data) => {
+            if (err) {
+                return res.status(500).send('Database error');
+            }
+            res.status(201).send({tagId, todoId});
+        });
+    }
+);
 
 TagsRouterPsql.delete('/todos-tags', (req, res) => {
     res.status(200);
