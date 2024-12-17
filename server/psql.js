@@ -1,40 +1,16 @@
 const { Client } = require('pg');
-const AWS = require('aws-sdk');
 
-const secretsManager = new AWS.SecretsManager({ region: 'us-east-1' });
+// Local host connection
+const postgres = new Client({
+  host: '127.0.0.1',
+  port: 5432,
+  user: 'samuelberston',
+  database: 'todo'
+})
 
-// get DB credentials from AWS Secrets Manager
-async function getDatabaseCredentials() {
-  try {
-    const data = await secretsManager.getSecretValue({ SecretId: 'rds-database-password' }).promise();
-
-    if (data.SecretString) {
-      const credentials = JSON.parse(data.SecretString);
-      return credentials;
-    } else {
-      throw new Error('Secret not found');
-    }
-  } catch (err) {
-    console.error('Error retrieving secret:', err);
-    throw err;
-  }
-}
-
-async function connectToDatabase() {
-  const credentials = await getDatabaseCredentials();
-
-  const client = new Client({
-    user: credentials.username,
-    host: 'threat-postgres-rds.cluster-ro-cwhep9aqborz.us-east-1.rds.amazonaws.com',
-    database: 'todo',
-    password: credentials.password,
-    port: 5432,
-  });
-
-  await client.connect();
-  console.log('Connected to PostgreSQL database');
-}
-
-connectToDatabase();
+postgres.connect((err) => {
+  if (err) { throw err; }
+  console.log(`Database connected at port 5432`);
+})
 
 module.exports = postgres;
